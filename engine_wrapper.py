@@ -74,6 +74,10 @@ class UCIEngine(EngineWrapper):
 
         self.engine.uci()
 
+        self.engine.setoption({"MultiPv":218}) 
+        self.engine.setoption({"Move Overhead": 1000})
+
+
         if options:
             self.engine.setoption(options)
 
@@ -85,19 +89,22 @@ class UCIEngine(EngineWrapper):
     def first_search(self, board, movetime):
         self.engine.position(board)
         self.engine.go(movetime=movetime)
-        worst_move = list(self.info_handler.info["pv"].values())[-1][0]
+        worst_move = list(self.engine.info_handlers[0].info["pv"].values())[-1][0]
         return worst_move
 
     def search(self, board, wtime, btime, winc, binc):
         self.engine.position(board)
-        self.engine.go(
+        best_move = self.engine.go(
             wtime=wtime,
             btime=btime,
             winc=winc,
             binc=binc
         )
-        worst_move = list(self.info_handler.info["pv"].values())[-1][0]
-        return worst_move
+        try:
+            worst_move = list(self.engine.info_handlers[0].info["pv"].values())[-1][0]
+            return worst_move
+        except:
+            return best_move
 
     def print_stats(self):
         self.print_handler_stats(self.engine.info_handlers[0].info, ["string", "depth", "nps", "nodes", "score"])

@@ -10,7 +10,7 @@ engine:                      # engine settings
 
 #ucioptions:
   MultiPV: 218
-  slowmover: 30
+  Move Overhead: 30
 #  Threads: 4
 #  Hash: "4096"
 #  Book File: "engines/book.bin"
