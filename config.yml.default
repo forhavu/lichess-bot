@@ -9,6 +9,8 @@ engine:                      # engine settings
 #  threads: 1                # only if the engine is lczero
 
 #ucioptions:
+  MultiPV: 218
+  slowmover: 30
 #  Threads: 4
 #  Hash: "4096"
 #  Book File: "engines/book.bin"
@@ -39,6 +41,6 @@ supported_tc:                # time controls to accept
 
 supported_modes:             # game modes to accept
   - casual                   # unrated games
-  - rated                    # rated games - must comment if the engine doesn't try to win
+#  - rated                    # rated games - must comment if the engine doesn't try to win
 
 print_engine_stats: false    # print engine stats on each move

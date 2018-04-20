@@ -107,8 +107,8 @@ def play_game(li, game_id, engine_path, weights, threads, control_queue):
             board = update_board(board, moves[-1])
 
             if is_engine_move(game.is_white, moves):
-                best_move = engine.search(board, upd.get("wtime"), upd.get("btime"), upd.get("winc"), upd.get("binc"))
-                li.make_move(game.id, best_move)
+                worst_move = engine.search(board, upd.get("wtime"), upd.get("btime"), upd.get("winc"), upd.get("binc"))
+                li.make_move(game.id, worst_move)
                 if CONFIG.get("print_engine_stats"):
                     engine.print_stats()
 
