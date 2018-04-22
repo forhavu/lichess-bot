@@ -76,6 +76,7 @@ class UCIEngine(EngineWrapper):
 
         self.engine.setoption({"MultiPv":218}) 
         self.engine.setoption({"Move Overhead": 1000})
+        self.engine.setoption({"Slow Mover": 10})
 
 
         if options:
