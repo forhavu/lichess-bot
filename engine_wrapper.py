@@ -1,6 +1,31 @@
+import os
 import chess
 import chess.xboard
 import chess.uci
+
+def create_engine(config, board):
+    # print("Loading Engine!")
+    cfg = config["engine"]
+    engine_path = os.path.join(cfg["dir"], cfg["name"])
+    weights = os.path.join(cfg["dir"], cfg["weights"]) if "weights" in cfg else None
+    threads = cfg.get("threads")
+
+    # TODO: ucioptions should probably be a part of the engine subconfig
+    ucioptions = config.get("ucioptions")
+    engine_type = cfg.get("protocol")
+    commands = [engine_path]
+    if weights:
+        commands.append("-w")
+        commands.append(weights)
+    if threads:
+        commands.append("-t")
+        commands.append(str(threads))
+
+    if engine_type == "xboard":
+        return XBoardEngine(board, commands)
+
+    return UCIEngine(board, commands, ucioptions)
+
 
 class EngineWrapper:
 
@@ -37,6 +62,12 @@ class XBoardEngine(EngineWrapper):
         self.engine = chess.xboard.popen_engine(commands)
 
         self.engine.xboard()
+
+        if board.chess960:
+            self.engine.send_variant("fischerandom")
+        elif type(board).uci_variant != "chess":
+            self.engine.send_variant(type(board).uci_variant)
+
         self.engine.setboard(board)
 
         post_handler = chess.xboard.PostHandler()
@@ -82,18 +113,21 @@ class UCIEngine(EngineWrapper):
         if options:
             self.engine.setoption(options)
 
+        self.engine.setoption({"UCI_Variant": type(board).uci_variant})
         self.engine.position(board)
 
         info_handler = chess.uci.InfoHandler()
         self.engine.info_handlers.append(info_handler)
 
     def first_search(self, board, movetime):
+        self.engine.setoption({"UCI_Variant": type(board).uci_variant})
         self.engine.position(board)
         self.engine.go(movetime=movetime)
         worst_move = list(self.engine.info_handlers[0].info["pv"].values())[-1][0]
         return worst_move
 
     def search(self, board, wtime, btime, winc, binc):
+        self.engine.setoption({"UCI_Variant": type(board).uci_variant})
         self.engine.position(board)
         best_move = self.engine.go(
             wtime=wtime,
