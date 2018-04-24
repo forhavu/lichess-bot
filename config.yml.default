@@ -7,6 +7,11 @@ engine:                      # engine settings
   protocol: "uci"            # "uci" or "xboard"
 #  weights: "latest.txt"     # only if the engine is lczero
 #  threads: 1                # only if the engine is lczero
+  polyglot: false            # activate polyglot book
+  polyglot_book: "book.bin"  # book file name, must be in engine.dir
+  polyglot_max_depth: 8      # half move max depth
+  polyglot_min_weight: 1     # best move weight
+  polyglot_random: true      # select move randomly otherwise select by min weight
 
 
 ucioptions:                  # arbitrary UCI options passed to the engine
@@ -19,7 +24,7 @@ ucioptions:                  # arbitrary UCI options passed to the engine
 
 
 max_concurrent_games: 1      # number of games to play simultaneously
-max_queued_challenges: 8     # number of challenges to allow to queue
+sort_challenges_by: "best"   # possible values: "best", "first"
 
 supported_variants:          # chess variants to accept (http://lichess.org/variant)
   - standard

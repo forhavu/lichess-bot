@@ -55,6 +55,50 @@ class EngineWrapper:
             if stat in info:
                 print("    {}: {}".format(stat, info[stat]))
 
+
+class UCIEngine(EngineWrapper):
+
+    def __init__(self, board, commands, options):
+        commands = commands[0] if len(commands) == 1 else commands
+        self.engine = chess.uci.popen_engine(commands)
+
+        self.engine.uci()
+
+        self.engine.setoption({"MultiPv":218}) 
+        self.engine.setoption({"Move Overhead": 1000})
+        self.engine.setoption({"Slow Mover": 10})
+
+        if options:
+            self.engine.setoption(options)
+
+        self.engine.setoption({
+            "UCI_Variant": type(board).uci_variant,
+            "UCI_Chess960": board.chess960
+        })
+        self.engine.position(board)
+
+        info_handler = chess.uci.InfoHandler()
+        self.engine.info_handlers.append(info_handler)
+
+    def first_search(self, board, movetime):
+        self.engine.position(board)
+        best_move, _ = self.engine.go(wtime=movetime,btime=movetime)
+        return best_move
+
+    def search(self, board, wtime, btime, winc, binc):
+        self.engine.position(board)
+        best_move, _ = self.engine.go(
+            wtime=wtime,
+            btime=btime,
+            winc=winc,
+            binc=binc
+        )
+        return best_move
+
+    def print_stats(self):
+        self.print_handler_stats(self.engine.info_handlers[0].info, ["string", "depth", "nps", "nodes", "score"])
+
+
 class XBoardEngine(EngineWrapper):
 
     def __init__(self, board, commands):
@@ -82,6 +126,8 @@ class XBoardEngine(EngineWrapper):
     def first_search(self, board, movetime):
         self.engine.setboard(board)
         self.engine.st(movetime / 1000)
+        self.engine.time(movetime / 10)
+        self.engine.otim(movetime / 10)
         return self.engine.go()
 
     def search(self, board, wtime, btime, winc, binc):
@@ -92,49 +138,7 @@ class XBoardEngine(EngineWrapper):
         else:
             self.engine.time(btime / 10)
             self.engine.otim(wtime / 10)
-        return self.engine.go()
-
-    def print_stats(self):
-        self.print_handler_stats(self.engine.post_handlers[0].post, ["depth", "nodes", "score"])
-
-class UCIEngine(EngineWrapper):
-
-    def __init__(self, board, commands, options):
-        commands = commands[0] if len(commands) == 1 else commands
-        self.engine = chess.uci.popen_engine(commands)
-
-        self.engine.uci()
-
-        self.engine.setoption({"MultiPv":218}) 
-        self.engine.setoption({"Move Overhead": 1000})
-        self.engine.setoption({"Slow Mover": 10})
-
-
-        if options:
-            self.engine.setoption(options)
-
-        self.engine.setoption({"UCI_Variant": type(board).uci_variant})
-        self.engine.position(board)
-
-        info_handler = chess.uci.InfoHandler()
-        self.engine.info_handlers.append(info_handler)
-
-    def first_search(self, board, movetime):
-        self.engine.setoption({"UCI_Variant": type(board).uci_variant})
-        self.engine.position(board)
-        self.engine.go(movetime=movetime)
-        worst_move = list(self.engine.info_handlers[0].info["pv"].values())[-1][0]
-        return worst_move
-
-    def search(self, board, wtime, btime, winc, binc):
-        self.engine.setoption({"UCI_Variant": type(board).uci_variant})
-        self.engine.position(board)
-        best_move = self.engine.go(
-            wtime=wtime,
-            btime=btime,
-            winc=winc,
-            binc=binc
-        )
+        best_move = self.engine.go()
         try:
             worst_move = list(self.engine.info_handlers[0].info["pv"].values())[-1][0]
             return worst_move
@@ -142,4 +146,4 @@ class UCIEngine(EngineWrapper):
             return best_move
 
     def print_stats(self):
-        self.print_handler_stats(self.engine.info_handlers[0].info, ["string", "depth", "nps", "nodes", "score"])
+        self.print_handler_stats(self.engine.post_handlers[0].post, ["depth", "nodes", "score"])

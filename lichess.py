@@ -1,12 +1,16 @@
-import json
 import requests
 from future.standard_library import install_aliases
 install_aliases()
-from urllib.parse import urlparse, urlencode
 from urllib.parse import urljoin
-from http.client import RemoteDisconnected
 from requests.exceptions import ConnectionError, HTTPError
 from urllib3.exceptions import ProtocolError
+
+try:
+    from http.client import RemoteDisconnected
+    # New in version 3.5: Previously, BadStatusLine('') was raised.
+except ImportError:
+    from http.client import BadStatusLine as RemoteDisconnected
+
 import backoff
 
 ENDPOINTS = {
@@ -25,11 +29,15 @@ ENDPOINTS = {
 # docs: https://lichess.org/api
 class Lichess():
 
-    def __init__(self, token, url):
-        self.header = self._get_header(token)
+    def __init__(self, token, url, version):
+        self.version = version
+        self.header = {
+            "Authorization": "Bearer {}".format(token)
+        }
         self.baseUrl = url
         self.session = requests.Session()
         self.session.headers.update(self.header)
+        self.set_user_agent("?")
 
     def is_final(exception):
         return isinstance(exception, HTTPError) and exception.response.status_code < 500
@@ -85,9 +93,10 @@ class Lichess():
         return self.api_post(ENDPOINTS["decline"].format(challenge_id))
 
     def get_profile(self):
-        return self.api_get(ENDPOINTS["profile"])
+        profile = self.api_get(ENDPOINTS["profile"])
+        self.set_user_agent(profile["username"])
+        return profile
 
-    def _get_header(self, token):
-        return {
-            "Authorization": "Bearer {}".format(token)
-        }
+    def set_user_agent(self, username):
+        self.header.update({"User-Agent": "lichess-bot/{} user:{}".format(self.version, username)})
+        self.session.headers.update(self.header)
