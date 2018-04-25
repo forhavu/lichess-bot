@@ -83,7 +83,12 @@ class UCIEngine(EngineWrapper):
     def first_search(self, board, movetime):
         self.engine.position(board)
         best_move, _ = self.engine.go(wtime=movetime,btime=movetime)
-        return best_move
+        best_move = self.engine.go()
+        try:
+            worst_move = list(self.engine.info_handlers[0].info["pv"].values())[-1][0]
+            return worst_move
+        except:
+            return best_move
 
     def search(self, board, wtime, btime, winc, binc):
         self.engine.position(board)
@@ -93,7 +98,11 @@ class UCIEngine(EngineWrapper):
             winc=winc,
             binc=binc
         )
-        return best_move
+        try:
+            worst_move = list(self.engine.info_handlers[0].info["pv"].values())[-1][0]
+            return worst_move
+        except:
+            return best_move
 
     def print_stats(self):
         self.print_handler_stats(self.engine.info_handlers[0].info, ["string", "depth", "nps", "nodes", "score"])
