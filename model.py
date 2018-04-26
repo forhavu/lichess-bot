@@ -64,16 +64,10 @@ class Challenge():
         variants = config["supported_variants"]
         tc = config["supported_tc"]
         modes = config["supported_modes"]
-        try:
-            mintt = config["min_total_time"]
-        except:
-            #default to minimum total time of the quickest supported time control
-            mintt = self.default_min_tt(tc[0])
-        try:
-            maxtt = config["max_total_time"]
-        except:
-            #default to maximum total time of the slowest supported time control
-            maxtt = self.default_max_tt(tc[-1])
+        #default to minimum total time of the quickest supported time control if no min total time specified
+        mintt = config["min_total_time"] if "min_total_time" in config else self.default_min_tt(tc[0])
+        #default to maximum total time of the slowest supported time control if no max total time specified
+        maxtt = config["max_total_time"] if "max_total_time" in config else self.default_max_tt(tc[-1])
         return self.is_supported_speed(tc, mintt, maxtt) and self.is_supported_variant(variants) and self.is_supported_mode(modes)
 
     def score(self):
