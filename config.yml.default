@@ -33,6 +33,11 @@ max_concurrent_games: 1      # number of games to play simultaneously
 sort_challenges_by: "best"   # possible values: "best", "first"
 abort_time: 20               # time to abort a game in seconds when there is no activity
 
+#min_total_time: 0            # minimum "total time" in seconds, including increment.  
+#max_total_time: 1500         # maximum "total time" in seconds, including increment.  
+                             # "total time" is calculated by (BaseTime*60 + Increment*40)
+                             # e.g. 5+5 becomes 500, 10+0 becomes 500, 15+15 becomes 1500
+
 supported_variants:          # chess variants to accept (http://lichess.org/variant)
   - standard
 #  - fromPosition
