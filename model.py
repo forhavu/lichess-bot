@@ -24,7 +24,6 @@ class Challenge():
             #it's correspondence
             self.totalTime = 21600
 
-
     def is_supported_variant(self, supported):
         return self.variant in supported
 
