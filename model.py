@@ -16,20 +16,59 @@ class Challenge():
         self.challengerRatingInt = self.challenger["rating"] if self.challenger else 0
         self.challengerRating = self.challengerRatingInt or "?"
 
+        try:
+            limit = c_info["timeControl"]["limit"]
+            increment = c_info["timeControl"]["increment"]
+            self.totalTime = limit + increment * 40
+        except:
+            #it's correspondence
+            self.totalTime = 21600
+
     def is_supported_variant(self, supported):
         return self.variant in supported
 
-    def is_supported_speed(self, supported):
-        return self.speed in supported
+    def is_supported_speed(self, supported, mintt, maxtt):
+        if self.speed not in supported:
+            return False
+        elif mintt <= self.totalTime and self.totalTime <= maxtt:
+            return True
+        else:
+            return False
 
     def is_supported_mode(self, supported):
         return "rated" in supported if self.rated else "casual" in supported
+
+    def default_min_tt(self, tc):
+        minimums = {
+            "ultraBullet": 0,
+            "bullet": 30,
+            "blitz": 180,
+            "rapid": 480,
+            "classical": 1500,
+            "correspondence": 21600,
+        }
+        return minimums.get(tc)
+
+    def default_max_tt(self, tc):
+        maximums = {
+            "ultraBullet": 29,
+            "bullet": 179,
+            "blitz": 479,
+            "rapid": 1499,
+            "classical": 21599,
+            "correspondence": 21600
+        }
+        return maximums.get(tc)
 
     def is_supported(self, config):
         variants = config["supported_variants"]
         tc = config["supported_tc"]
         modes = config["supported_modes"]
-        return self.is_supported_speed(tc) and self.is_supported_variant(variants) and self.is_supported_mode(modes)
+        #default to minimum total time of the quickest supported time control if no min total time specified
+        mintt = config["min_total_time"] if "min_total_time" in config else self.default_min_tt(tc[0])
+        #default to maximum total time of the slowest supported time control if no max total time specified
+        maxtt = config["max_total_time"] if "max_total_time" in config else self.default_max_tt(tc[-1])
+        return self.is_supported_speed(tc, mintt, maxtt) and self.is_supported_variant(variants) and self.is_supported_mode(modes)
 
     def score(self):
         ratedBonus = 200 if self.rated else 0
