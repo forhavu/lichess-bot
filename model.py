@@ -88,8 +88,6 @@ class Challenge():
     def challengerFullName(self):
         return "{}{}".format(self.challengerTitle + " " if self.challengerTitle else "", self.challengerName)
 
-
-
     def __str__(self):
         return "{} {} challenge from {}({})".format(self.perf_name, self.mode(), self.challengerFullName(), self.challengerRating)
 
